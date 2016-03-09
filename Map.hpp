@@ -25,10 +25,14 @@ class Map{
                         this->prev[i] = this;
                    }
                 }
-                ~NodeBase(){
+                NodeBase(int l){
+                    this->next = new NodeBase*[l];
+                    this->prev = new NodeBase*[l];
+                }
+                virtual ~NodeBase(){
+                    if(DEBUG) std::cout << "in NodeBase destructor" << std::endl;
                     delete [] prev;
                     delete [] next;
-                
                 }
               private:
                 NodeBase **next;
@@ -37,10 +41,11 @@ class Map{
             class Node : public NodeBase{
                 friend class Map;
                 public:
-                Node(const ValueType &data, int l): data(data){
+                Node(const ValueType &data, int l): NodeBase(l), data(data){
                    this->levels = l;
-                   this->next = new NodeBase*[l];
-                   this->prev = new NodeBase*[l];
+                }
+                ~Node(){
+                    if(DEBUG)std::cout << "in Node destructor" << std::endl;
                 }
                 private:
                 ValueType data;
@@ -201,7 +206,8 @@ class Map{
             }
 
             Map(std::initializer_list<ValueType> l){
-                mapSize = l.size();
+                srand(time(NULL));
+                mapSize = 0;
                 sentinel = new NodeBase();
 
                 for(auto it = l.begin(); it != l.end(); ++it){
@@ -237,18 +243,15 @@ class Map{
                     std::cout << "Destructor called" << std::endl;
                 }
 
-                auto curr = sentinel->next[0];
-                auto toBeDeleted = curr;
+                Node* curr = (Node*)sentinel->next[0];
+                Node* toBeDeleted = curr;
                 while(curr != this->sentinel){
-                    curr = curr->next[0];
-                    /*
-                    if(DEBUG){
-                    std::cout << "deleting element: " << toBeDeleted->data.first << "--" << toBeDeleted->data.second << std::endl;
-                    }
-                    */
+                    curr = (Node*)curr->next[0];
+                   // std::cout << "deleting element: " << ((Node*)toBeDeleted)->data.first << "--" << ((Node*)toBeDeleted)->data.second << std::endl;
                 //delete [] toBeDeleted->next;
-                delete toBeDeleted;
-                toBeDeleted = curr;
+                //delete [] toBeDeleted->prev;
+                    delete toBeDeleted;
+                    toBeDeleted = curr;
                 }
                 delete sentinel;
             }
@@ -337,7 +340,7 @@ class Map{
                 throw std::out_of_range("key not found");
             }
 
-            V &operator[](const K &k) const{
+            V &operator[](const K &k){
                 try{
                     return this->at(k);
                 }catch(const std::out_of_range &oor){
@@ -424,12 +427,14 @@ class Map{
             }
 
             friend bool operator==(const Map &mp1, const Map &mp2){
-                if(mp1.size() != mp2.size())
+                if(mp1.size() != mp2.size()){
                     return false;
+                }
                 for(auto it1 = mp1.begin(), it2 = mp2.begin(); (it1 != mp1.end() && it2 != mp2.end()); ++it1, ++it2){
-                    if(it1->first != it2->first || it1->second != it2->second){
+                    if((it1->first == it2->first) && (it1->second == it2->second)){
+                        continue;
+                    }else
                         return false;
-                    }
                 }
                 return true;
             }
