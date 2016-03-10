@@ -195,14 +195,29 @@ class Map{
             } 
 
             Map(const Map &obj){
-                mapSize = 0;
+                mapSize = obj.mapSize;
                 sentinel = new NodeBase();
+                srand(time(NULL));
+                auto curr = obj.sentinel->next[0];
+                while(curr != obj.sentinel){
+                    int height = ((Node*)curr)->levels;
+                    NodeBase* newNode = new Node(((Node*)curr)->data, height);
+                    for(int i = 0; i < height; ++i){
+                        sentinel->prev[i]->next[i] = newNode;
+                        newNode->next[i] = sentinel;
+                        newNode->prev[i] = sentinel->prev[i];
+                        sentinel->prev[i] = newNode;
+                    }
+                    curr = curr->next[0];
+                }
+/*
                 srand(time(NULL));
                 auto curr = obj.sentinel->next[0];
                 while(curr != obj.sentinel){
                     this->add(((Node*)curr)->data);
                     curr = curr->next[0];
                 }
+*/
             }
 
             Map(std::initializer_list<ValueType> l){
@@ -226,13 +241,28 @@ class Map{
                    delete toBeDeleted;
                 }
                 delete sentinel;
+                
                 sentinel = new NodeBase();
+                curr = obj.sentinel->next[0];
+                while(curr != obj.sentinel){
+                    int height = ((Node*)curr)->levels;
+                    NodeBase* newNode = new Node(((Node*)curr)->data, height);
+                    for(int i = 0; i < height; ++i){
+                        sentinel->prev[i]->next[i] = newNode;
+                        newNode->next[i] = sentinel;
+                        newNode->prev[i] = sentinel->prev[i];
+                        sentinel->prev[i] = newNode;
+                    }
+                    curr = curr->next[0];
+                }
+                /*
                 //deep copy nodes in obj
                 curr = obj.sentinel->next[0];
                 while(curr != obj.sentinel){
                     this->add(((Node*)curr)->data);
                     curr = curr->next[0];
                 }
+                */
                 return *this;
             }
 
